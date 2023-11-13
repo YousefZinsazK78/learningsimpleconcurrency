@@ -16,6 +16,7 @@ func increment(wg *sync.WaitGroup) {
 }
 
 func main() {
+
 	var wg sync.WaitGroup
 	expectedCounter := 1000
 
