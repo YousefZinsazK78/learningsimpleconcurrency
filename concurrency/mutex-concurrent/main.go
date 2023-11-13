@@ -2,26 +2,35 @@ package main
 
 import (
 	"fmt"
-	"time"
+	"sync"
 )
 
+var counter int
+var mu sync.Mutex
+
+func increment(wg *sync.WaitGroup) {
+	defer wg.Done()
+	mu.Lock()
+	defer mu.Unlock()
+	counter++
+}
+
 func main() {
-	sum := 0
+	var wg sync.WaitGroup
+	expectedCounter := 1000
 
-	inc := func() {
-		sum += 10
+	for i := 0; i < expectedCounter; i++ {
+		wg.Add(1)
+		go increment(&wg)
 	}
 
-	dec := func() {
-		sum -= 10
+	wg.Wait()
+	fmt.Println("Expected Counter:", expectedCounter)
+	fmt.Println("Actual Counter:", counter)
+	// Check for race condition
+	if expectedCounter != counter {
+		fmt.Println("Race condition detected!")
+	} else {
+		fmt.Println("No race condition detected.")
 	}
-
-	for i := 0; i < 5; i++ {
-		go inc()
-	}
-
-	go dec()
-
-	time.Sleep(time.Second)
-	fmt.Println(sum)
 }
